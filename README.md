@@ -1,83 +1,61 @@
 # Go Rest Framework
 
-Readme coming soon...
 
-#### Example
+#### Install module
 
-`views/views.go`
+`go get -u github.com/dennybiasiolli/gorestframework`
 
-```go
-package views
 
-import (
-	"go-rest-service/models"
-
-	"github.com/dennybiasiolli/gorestframework"
-	"github.com/gorilla/mux"
-)
-
-func SetViews(router *mux.Router) {
-	gorestframework.View(&gorestframework.ViewInput{
-		Router:     router,
-		PathPrefix: "/products",
-		ModelPtr:   &models.Product{},
-	})
-}
-```
-
-`models/product.go`
-
-```go
-package models
-
-import "github.com/jinzhu/gorm"
-
-type Product struct {
-	gorm.Model
-	Code  string
-	Price uint
-}
-```
-
-`models/models.go`
-
-```go
-package models
-
-import "github.com/jinzhu/gorm"
-
-func MigrateModels(db *gorm.DB) {
-	db.AutoMigrate(
-		&Product{},
-	)
-}
-```
-
-`main.go`
+#### Usage example
 
 ```go
 package main
 
 import (
-	"go-rest-service/models"
-	"go-rest-service/views"
-
 	"github.com/dennybiasiolli/gorestframework"
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
 
+// create the model definition
+// more info here: https://gorm.io/docs/models.html
+type Product struct {
+	gorm.Model
+	Code  string
+	Price uint
+}
+
+// create migration function
+func MigrateModels(db *gorm.DB) {
+	db.AutoMigrate(
+		// passing all desired models here
+		&Product{},
+	)
+}
+
+// create SetView function
+func SetViews(router *mux.Router) {
+	gorestframework.View(&gorestframework.ViewInput{
+		Router:     router,
+		PathPrefix: "/products",
+		ModelPtr:   &Product{},
+	})
+}
+
 func main() {
+	// initializing database connection
 	gorestframework.InitDbConn(
 		"sqlite3",  // DatabaseDialect,
 		"test.db",  // DatabaseConnectionString,
-		models.MigrateModels,
+		MigrateModels,
 	)
 	defer gorestframework.CloseDbConn()
 
+	// start HTTP listener
 	gorestframework.StartHTTPListener(
 		true,  // RouterActivateLog,
 		true,  // RouterUseCORS,
 		views.SetViews,
 	)
 }
-
 ```
