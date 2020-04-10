@@ -8,8 +8,16 @@ import (
 
 var db *gorm.DB
 var err error
-var IsDbInitialized = false
+var isDbInitialized = false
 
+// IsDbInitialized returns if database is already initialized
+func IsDbInitialized() bool {
+	return isDbInitialized
+}
+
+// InitDbConn initialize a DB Connection using defined `databaseDialect` and `connectionString`.
+// If defined, the `fnDbAutoMigrate` allows to execute auto-migration of database structure when the connection is opened.
+// **Note**: don't forget to call `defer gorestframework.CloseDbConn()`
 func InitDbConn(
 	databaseDialect string,
 	connectionString string,
@@ -21,14 +29,23 @@ func InitDbConn(
 		log.Fatalln(err)
 		panic("failed to connect database")
 	}
-	fnDbAutoMigrate(db)
+	isDbInitialized = true
+	if fnDbAutoMigrate != nil {
+		fnDbAutoMigrate(db)
+	}
 }
 
+// CloseDbConn close database connection when is opened
 func CloseDbConn() {
-	db.Close()
-	log.Println("Closing db conn...")
+	if isDbInitialized {
+		db.Close()
+		log.Println("Closing db conn...")
+	}
 }
 
+// DbOperation allows users to perform an operation on the active database.
 func DbOperation(fn func(db *gorm.DB)) {
-	fn(db)
+	if isDbInitialized {
+		fn(db)
+	}
 }

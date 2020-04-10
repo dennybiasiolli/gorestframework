@@ -28,7 +28,7 @@ func View(
 ) ViewOutput {
 	var controller ControllerOutput
 	if input.Controller == nil {
-		controller = Controller(input.PathPrefix, input.ModelPtr)
+		controller = Controller(input.ModelPtr)
 	} else {
 		controller = *input.Controller
 	}
