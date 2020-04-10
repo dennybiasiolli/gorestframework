@@ -1,3 +1,56 @@
+/*
+Package gorestframework implements a simple library for creating REST endpoints in an easy way.
+
+An example could be the following:
+
+	import (
+		"github.com/dennybiasiolli/gorestframework"
+		"github.com/gorilla/mux"
+		"github.com/jinzhu/gorm"
+	)
+
+	// create the model definition
+	// more info here: https://gorm.io/docs/models.html
+	type Product struct {
+		gorm.Model
+		Code  string
+		Price uint
+	}
+
+	// create migration function
+	func MigrateModels(db *gorm.DB) {
+		db.AutoMigrate(
+			// passing all desired models here
+			&Product{},
+		)
+	}
+
+	// create SetView function
+	func SetViews(router *mux.Router) {
+		gorestframework.View(&gorestframework.ViewInput{
+			Router:     router,
+			PathPrefix: "/products",
+			ModelPtr:   &Product{},
+		})
+	}
+
+	func main() {
+		// initializing database connection
+		gorestframework.InitDbConn(
+			"sqlite3",  // DatabaseDialect,
+			"test.db",  // DatabaseConnectionString,
+			MigrateModels,
+		)
+		defer gorestframework.CloseDbConn()
+
+		// start HTTP listener
+		gorestframework.StartHTTPListener(
+			true,  // RouterActivateLog,
+			true,  // RouterUseCORS,
+			views.SetViews,
+		)
+	}
+*/
 package gorestframework
 
 import (
@@ -13,6 +66,14 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// StartHTTPListener starts the HTTP Listener.
+// HOST and PORT can be passed via ENV, unless the default are
+// - HOST=localhost
+// - PORT=8000
+//
+// activateLog it's used to log requests to console
+// useCORS enable CORS capability for all hosts, PR are welcome!
+// fnSetViews is a callback function for configuring the mux.Router
 func StartHTTPListener(
 	activateLog bool,
 	useCORS bool,

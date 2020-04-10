@@ -5,34 +5,32 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
-	"strings"
 
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 )
 
+// ControllerOutput contains the output of the Controller function
 type ControllerOutput struct {
-	ControllerName string
-	ModelPtr       interface{}
-	GetAll         func(w http.ResponseWriter, r *http.Request)
-	Get            func(w http.ResponseWriter, r *http.Request)
-	Post           func(w http.ResponseWriter, r *http.Request)
-	Put            func(w http.ResponseWriter, r *http.Request)
-	Patch          func(w http.ResponseWriter, r *http.Request)
-	Delete         func(w http.ResponseWriter, r *http.Request)
+	ModelPtr interface{}                                  // pointer to the defined model
+	GetAll   func(w http.ResponseWriter, r *http.Request) // function for retreiving all records
+	Get      func(w http.ResponseWriter, r *http.Request) // function for retreiving a single record
+	Post     func(w http.ResponseWriter, r *http.Request) // function for adding a record
+	Put      func(w http.ResponseWriter, r *http.Request) // function for updating a record
+	Patch    func(w http.ResponseWriter, r *http.Request) // function for updating a record
+	Delete   func(w http.ResponseWriter, r *http.Request) // function for deleting a record
 }
 
-func Controller(controllerName string, modelPtr interface{}) ControllerOutput {
-	if strings.HasPrefix(controllerName, "/") {
-		controllerName = controllerName[1:]
-	}
+// Controller returns a ControllerOutput containing all REST handlers
+//
+// controllerName contains
+func Controller(modelPtr interface{}) ControllerOutput {
 	T := reflect.TypeOf(modelPtr)
 	if T.Kind() == reflect.Ptr {
 		T = T.Elem()
 	}
 	return ControllerOutput{
-		ControllerName: controllerName,
-		ModelPtr:       modelPtr,
+		ModelPtr: modelPtr,
 
 		GetAll: func(w http.ResponseWriter, r *http.Request) {
 			DbOperation(func(db *gorm.DB) {
@@ -50,7 +48,7 @@ func Controller(controllerName string, modelPtr interface{}) ControllerOutput {
 				if res.RecordNotFound() {
 					JsonRespondWithStatus(w, map[string]interface{}{
 						"error":   true,
-						"message": fmt.Sprintf("%s with ID %s not found", controllerName, vars["id"]),
+						"message": fmt.Sprintf("%s with ID %s not found", T.Name(), vars["id"]),
 					}, http.StatusNotFound)
 					return
 				} else if err := res.Error; err != nil {
@@ -110,7 +108,7 @@ func Controller(controllerName string, modelPtr interface{}) ControllerOutput {
 				if res.RecordNotFound() {
 					JsonRespondWithStatus(w, map[string]interface{}{
 						"error":   true,
-						"message": fmt.Sprintf("%s with ID %s not found", controllerName, vars["id"]),
+						"message": fmt.Sprintf("%s with ID %s not found", T.Name(), vars["id"]),
 					}, http.StatusNotFound)
 					return
 				} else if err := res.Error; err != nil {
@@ -125,7 +123,7 @@ func Controller(controllerName string, modelPtr interface{}) ControllerOutput {
 						"error": true,
 						"message": fmt.Sprintf(
 							"Unable to change ID of %s from %v to %v. PRs are welcome!",
-							controllerName, id, newIDField,
+							T.Name(), id, newIDField,
 						),
 					}, http.StatusBadRequest)
 					return
@@ -164,7 +162,7 @@ func Controller(controllerName string, modelPtr interface{}) ControllerOutput {
 				if res.RecordNotFound() {
 					JsonRespondWithStatus(w, map[string]interface{}{
 						"error":   true,
-						"message": fmt.Sprintf("%s with ID %s not found", controllerName, vars["id"]),
+						"message": fmt.Sprintf("%s with ID %s not found", T.Name(), vars["id"]),
 					}, http.StatusNotFound)
 					return
 				} else if err := res.Error; err != nil {
@@ -179,7 +177,7 @@ func Controller(controllerName string, modelPtr interface{}) ControllerOutput {
 						"error": true,
 						"message": fmt.Sprintf(
 							"Unable to change ID of %s from %v to %v. PRs are welcome!",
-							controllerName, id, newIDField,
+							T.Name(), id, newIDField,
 						),
 					}, http.StatusBadRequest)
 					return
@@ -206,7 +204,7 @@ func Controller(controllerName string, modelPtr interface{}) ControllerOutput {
 				if res.RecordNotFound() {
 					JsonRespondWithStatus(w, map[string]interface{}{
 						"error":   true,
-						"message": fmt.Sprintf("%s with ID %s not found", controllerName, vars["id"]),
+						"message": fmt.Sprintf("%s with ID %s not found", T.Name(), vars["id"]),
 					}, http.StatusNotFound)
 					return
 				} else if err := res.Error; err != nil {
