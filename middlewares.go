@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// LoggingMiddleware is used to log every request with Method and RequestURI
 func LoggingMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Do stuff here
@@ -15,6 +16,7 @@ func LoggingMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+// CORSMiddleware is used to enable CORS capability for all hosts, PR are welcome!
 func CORSMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE")
