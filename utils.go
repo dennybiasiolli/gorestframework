@@ -7,14 +7,17 @@ import (
 )
 
 const (
-	JsonContentType string = "application/json"
+	// JSONContentType is a constant defining the content type for json requests
+	JSONContentType string = "application/json"
 )
 
-func JsonRespond(w http.ResponseWriter, data interface{}) error {
-	return JsonRespondWithStatus(w, data, http.StatusOK)
+// JSONRespond is a shortcut for JSONRespondWithStatus, using http.StatusOK as default status
+func JSONRespond(w http.ResponseWriter, data interface{}) error {
+	return JSONRespondWithStatus(w, data, http.StatusOK)
 }
 
-func JsonRespondWithStatus(w http.ResponseWriter, data interface{}, httpStatus int) error {
+// JSONRespondWithStatus writes to a http.ResponseWriter a specific `data` value in JSON format, using the passed httpStatus
+func JSONRespondWithStatus(w http.ResponseWriter, data interface{}, httpStatus int) error {
 	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(httpStatus)
 	// data is a pointer to struct to marshal.
@@ -28,8 +31,8 @@ func JsonRespondWithStatus(w http.ResponseWriter, data interface{}, httpStatus i
 // Respond answers providing the correct content based on client accept header.
 func Respond(w http.ResponseWriter, r *http.Request, data interface{}) error {
 	switch r.Header.Get("Accept") {
-	case JsonContentType:
-		return JsonRespond(w, data)
+	case JSONContentType:
+		return JSONRespond(w, data)
 	default:
 		w.WriteHeader(http.StatusUnsupportedMediaType)
 		// it should be used a sentinel error instead: https://dave.cheney.net/tag/errors
@@ -41,8 +44,8 @@ func Respond(w http.ResponseWriter, r *http.Request, data interface{}) error {
 // with custom HTTP status.
 func RespondWithStatus(w http.ResponseWriter, r *http.Request, data interface{}, httpStatus int) error {
 	switch r.Header.Get("Accept") {
-	case JsonContentType:
-		return JsonRespondWithStatus(w, data, httpStatus)
+	case JSONContentType:
+		return JSONRespondWithStatus(w, data, httpStatus)
 	default:
 		w.WriteHeader(http.StatusUnsupportedMediaType)
 		return fmt.Errorf("invalid Accept header")

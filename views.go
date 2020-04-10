@@ -8,21 +8,24 @@ import (
 	"github.com/gorilla/mux"
 )
 
+// ViewInput contains the input of the View function
 type ViewInput struct {
-	Router     *mux.Router
-	PathPrefix string
-	Controller *ControllerOutput
-	ModelPtr   interface{}
+	Router     *mux.Router       // router used for adding the subroutes
+	PathPrefix string            // prefix where the subroutes will be added
+	Controller *ControllerOutput // optional custom controller for the routes
+	ModelPtr   interface{}       // model used for reading/writing data from/to database
 }
 
+// ViewOutput contains the output of the View function
 type ViewOutput struct {
-	Router     *mux.Router
-	Subrouter  *mux.Router
-	PathPrefix string
-	Controller ControllerOutput
-	ModelPtr   interface{}
+	Router     *mux.Router      // router used for adding the subroutes
+	Subrouter  *mux.Router      // subrouter containing the subroutes
+	PathPrefix string           // prefix where the subroutes are added
+	Controller ControllerOutput // controller used for the routes
+	ModelPtr   interface{}      // model used for reading/writing data from/to database
 }
 
+// View returns a ViewOutput containing all routes for a specific PathPrefix
 func View(
 	input *ViewInput,
 ) ViewOutput {

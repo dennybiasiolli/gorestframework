@@ -22,8 +22,6 @@ type ControllerOutput struct {
 }
 
 // Controller returns a ControllerOutput containing all REST handlers
-//
-// controllerName contains
 func Controller(modelPtr interface{}) ControllerOutput {
 	T := reflect.TypeOf(modelPtr)
 	if T.Kind() == reflect.Ptr {
@@ -36,7 +34,7 @@ func Controller(modelPtr interface{}) ControllerOutput {
 			DbOperation(func(db *gorm.DB) {
 				resultsPtr := reflect.New(reflect.SliceOf(T)).Interface()
 				db.Find(resultsPtr)
-				JsonRespond(w, resultsPtr)
+				JSONRespond(w, resultsPtr)
 			})
 		},
 
@@ -46,16 +44,16 @@ func Controller(modelPtr interface{}) ControllerOutput {
 				resultPtr := reflect.New(T).Interface()
 				res := db.First(resultPtr, vars["id"])
 				if res.RecordNotFound() {
-					JsonRespondWithStatus(w, map[string]interface{}{
+					JSONRespondWithStatus(w, map[string]interface{}{
 						"error":   true,
 						"message": fmt.Sprintf("%s with ID %s not found", T.Name(), vars["id"]),
 					}, http.StatusNotFound)
 					return
 				} else if err := res.Error; err != nil {
-					JsonRespondWithStatus(w, err, http.StatusBadRequest)
+					JSONRespondWithStatus(w, err, http.StatusBadRequest)
 					return
 				}
-				JsonRespond(w, resultPtr)
+				JSONRespond(w, resultPtr)
 			})
 		},
 
@@ -67,7 +65,7 @@ func Controller(modelPtr interface{}) ControllerOutput {
 			// respond to the client with the error message and a 400 status code.
 			err := json.NewDecoder(r.Body).Decode(&modelDataPtr)
 			if err != nil {
-				JsonRespondWithStatus(w, map[string]interface{}{
+				JSONRespondWithStatus(w, map[string]interface{}{
 					"Severity": "error",
 					"Message":  "Unable to parse JSON body.",
 				}, http.StatusBadRequest)
@@ -77,10 +75,10 @@ func Controller(modelPtr interface{}) ControllerOutput {
 			// try to create the record into the database
 			DbOperation(func(db *gorm.DB) {
 				if err := db.Create(modelDataPtr).Error; err != nil {
-					JsonRespondWithStatus(w, err, http.StatusBadRequest)
+					JSONRespondWithStatus(w, err, http.StatusBadRequest)
 					return
 				}
-				JsonRespond(w, modelDataPtr)
+				JSONRespond(w, modelDataPtr)
 			})
 		},
 
@@ -95,7 +93,7 @@ func Controller(modelPtr interface{}) ControllerOutput {
 			// respond to the client with the error message and a 400 status code.
 			err := json.NewDecoder(r.Body).Decode(&newModelDataPtr)
 			if err != nil {
-				JsonRespondWithStatus(w, map[string]interface{}{
+				JSONRespondWithStatus(w, map[string]interface{}{
 					"Severity": "error",
 					"Message":  "Unable to parse JSON body.",
 				}, http.StatusBadRequest)
@@ -106,20 +104,20 @@ func Controller(modelPtr interface{}) ControllerOutput {
 			DbOperation(func(db *gorm.DB) {
 				res := db.First(modelDataPtr, vars["id"])
 				if res.RecordNotFound() {
-					JsonRespondWithStatus(w, map[string]interface{}{
+					JSONRespondWithStatus(w, map[string]interface{}{
 						"error":   true,
 						"message": fmt.Sprintf("%s with ID %s not found", T.Name(), vars["id"]),
 					}, http.StatusNotFound)
 					return
 				} else if err := res.Error; err != nil {
-					JsonRespondWithStatus(w, err, http.StatusBadRequest)
+					JSONRespondWithStatus(w, err, http.StatusBadRequest)
 					return
 				}
 
 				id := reflect.ValueOf(modelDataPtr).Elem().FieldByName("ID").Int()
 				newIDField := reflect.ValueOf(newModelDataPtr).Elem().FieldByName("ID")
 				if newIDField.IsValid() && id != newIDField.Int() {
-					JsonRespondWithStatus(w, map[string]interface{}{
+					JSONRespondWithStatus(w, map[string]interface{}{
 						"error": true,
 						"message": fmt.Sprintf(
 							"Unable to change ID of %s from %v to %v. PRs are welcome!",
@@ -131,10 +129,10 @@ func Controller(modelPtr interface{}) ControllerOutput {
 
 				res = db.Model(modelDataPtr).Updates(newModelDataPtr)
 				if err := res.Error; err != nil {
-					JsonRespondWithStatus(w, err, http.StatusBadRequest)
+					JSONRespondWithStatus(w, err, http.StatusBadRequest)
 					return
 				}
-				JsonRespond(w, modelDataPtr)
+				JSONRespond(w, modelDataPtr)
 			})
 		},
 
@@ -149,7 +147,7 @@ func Controller(modelPtr interface{}) ControllerOutput {
 			// respond to the client with the error message and a 400 status code.
 			err := json.NewDecoder(r.Body).Decode(&newModelDataPtr)
 			if err != nil {
-				JsonRespondWithStatus(w, map[string]interface{}{
+				JSONRespondWithStatus(w, map[string]interface{}{
 					"Severity": "error",
 					"Message":  "Unable to parse JSON body.",
 				}, http.StatusBadRequest)
@@ -160,20 +158,20 @@ func Controller(modelPtr interface{}) ControllerOutput {
 			DbOperation(func(db *gorm.DB) {
 				res := db.First(modelDataPtr, vars["id"])
 				if res.RecordNotFound() {
-					JsonRespondWithStatus(w, map[string]interface{}{
+					JSONRespondWithStatus(w, map[string]interface{}{
 						"error":   true,
 						"message": fmt.Sprintf("%s with ID %s not found", T.Name(), vars["id"]),
 					}, http.StatusNotFound)
 					return
 				} else if err := res.Error; err != nil {
-					JsonRespondWithStatus(w, err, http.StatusBadRequest)
+					JSONRespondWithStatus(w, err, http.StatusBadRequest)
 					return
 				}
 
 				id := reflect.ValueOf(modelDataPtr).Elem().FieldByName("ID").Int()
 				newIDField := reflect.ValueOf(newModelDataPtr).Elem().FieldByName("ID")
 				if newIDField.IsValid() && id != newIDField.Int() {
-					JsonRespondWithStatus(w, map[string]interface{}{
+					JSONRespondWithStatus(w, map[string]interface{}{
 						"error": true,
 						"message": fmt.Sprintf(
 							"Unable to change ID of %s from %v to %v. PRs are welcome!",
@@ -185,10 +183,10 @@ func Controller(modelPtr interface{}) ControllerOutput {
 
 				res = db.Model(modelDataPtr).Updates(newModelDataPtr)
 				if err := res.Error; err != nil {
-					JsonRespondWithStatus(w, err, http.StatusBadRequest)
+					JSONRespondWithStatus(w, err, http.StatusBadRequest)
 					return
 				}
-				JsonRespond(w, modelDataPtr)
+				JSONRespond(w, modelDataPtr)
 			})
 		},
 
@@ -202,22 +200,22 @@ func Controller(modelPtr interface{}) ControllerOutput {
 			DbOperation(func(db *gorm.DB) {
 				res := db.First(modelDataPtr, vars["id"])
 				if res.RecordNotFound() {
-					JsonRespondWithStatus(w, map[string]interface{}{
+					JSONRespondWithStatus(w, map[string]interface{}{
 						"error":   true,
 						"message": fmt.Sprintf("%s with ID %s not found", T.Name(), vars["id"]),
 					}, http.StatusNotFound)
 					return
 				} else if err := res.Error; err != nil {
-					JsonRespondWithStatus(w, err, http.StatusBadRequest)
+					JSONRespondWithStatus(w, err, http.StatusBadRequest)
 					return
 				}
 
 				res = db.Model(modelDataPtr).Delete(modelDataPtr)
 				if err := res.Error; err != nil {
-					JsonRespondWithStatus(w, err, http.StatusBadRequest)
+					JSONRespondWithStatus(w, err, http.StatusBadRequest)
 					return
 				}
-				JsonRespond(w, modelDataPtr)
+				JSONRespond(w, modelDataPtr)
 			})
 		},
 	}
