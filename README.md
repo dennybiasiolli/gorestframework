@@ -1,5 +1,6 @@
 # Go Rest Framework
 
+[![Go Report Card](https://goreportcard.com/badge/github.com/dennybiasiolli/gorestframework)](https://goreportcard.com/report/github.com/dennybiasiolli/gorestframework)
 
 #### Install module
 
